@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Cart</title>
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0}
+.card{background:white;padding:15px;margin:10px;border-radius:8px;display:flex;justify-content:space-between;align-items:center;box-shadow:0 2px 5px #ccc}
+button{padding:8px 12px;border:none;border-radius:4px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+  <h2>My Cart - <span id="count">0</span> Items</h2>
+  <button style="background:orange;color:white" onclick="location.href='customer_view_products.html'">Continue Shopping</button>
+</div>
+
+<div id="cartList">Loading...</div>
+
+<div style="background:white;padding:15px;margin:10px;border-radius:8px;text-align:right">
+  <h3 id="total">Total: Rs.0</h3>
+  <button onclick="clearCart()" style="background:#ccc">Clear Cart</button>
+  <button onclick="placeOrder()" style="background:green;color:white;padding:12px 20px;font-size:16px">Place Order</button>
+</div>
+
+<script>
+function updateBadge(){
+  const cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  const len = cart.length;
+  // badges from main.js navbar
+  const b1 = document.getElementById("cartBadge");
+  const b2 = document.getElementById("count");
+  if(b1) b1.innerText = len;
+  if(b2) b2.innerText = len;
+}
+
+function displayCart(){
+  let cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  let list = document.getElementById("cartList");
+  let total = 0;
+  updateBadge();
+  
+  if(cart.length==0){
+    list.innerHTML = "<div style='padding:20px;background:white;margin:10px;border-radius:8px;text-align:center'>Cart Empty - <a href='customer_view_products.html'>Add Products</a></div>";
+    document.getElementById("total").innerText = "Total: Rs.0";
+    return;
+  }
+  list.innerHTML = "";
+  cart.forEach((p,i)=>{
+    total += Number(p.price);
+    list.innerHTML += `
+      <div class="card">
+        <div>
+          <b>${p.name}</b><br>
+          <small>${p.details||''}</small><br>
+          <span style="color:green;font-weight:bold">Rs.${p.price}</span>
+        </div>
+        <button onclick="removeItem(${i})" style="background:red;color:white">Remove</button>
+      </div>
+    `;
+  });
+  document.getElementById("total").innerText = "Total: Rs."+total;
+}
+
+function removeItem(index){
+  let cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  cart.splice(index,1);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  displayCart();
+}
+function clearCart(){
+  if(confirm("Clear full cart?")){
+    localStorage.removeItem("cart");
+    displayCart();
+  }
+}
+function placeOrder(){
+  location.href="place_order.html";
+}
+
+displayCart();
+</script>
+
+</body>
+</html>

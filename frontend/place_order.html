@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Place Order</title>
+<link rel="icon" href="data:,">
+<style>
+body{font-family:Arial; background:#f2f2f2; margin:0;}
+.box{background:white; margin:15px; border-radius:8px; box-shadow:0 2px 5px #ccc; overflow:hidden}
+table{width:100%; border-collapse:collapse}
+th{background:#222;color:white;padding:12px;text-align:left}
+td{padding:12px;border-bottom:1px solid #eee}
+button{padding:10px 20px; border:none; border-radius:4px; cursor:pointer;}
+.green{background:green; color:white; width:100%; font-size:18px; margin-top:10px; padding:12px}
+</style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<div style="padding:15px; display:flex; justify-content:space-between; align-items:center;">
+  <h2>Place Order</h2>
+  <button onclick="location.href='customer_view_products.html'" style="background:orange;color:white; padding:8px 15px; border:none; border-radius:4px; cursor:pointer">Back to Shop</button>
+</div>
+
+<div class="box">
+<table id="cartTable">
+<tr><th>Product</th><th>Price</th><th>Action</th></tr>
+<tr><td colspan="3" style="text-align:center">Loading...</td></tr>
+</table>
+</div>
+
+<div style="padding:15px; background:white; margin:15px; border-radius:8px; text-align:right">
+  <h3 id="total">Total: Rs.0</h3>
+  <button class="green" onclick="placeOrder()">Confirm & Place Order</button>
+</div>
+
+<script>
+// token and logout is already handled by main.js
+const token = localStorage.getItem("token");
+
+async function loadCart(){ showLocalCart(); }
+
+function showLocalCart(){
+  let cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  if(cart.length===0){
+    document.getElementById("cartTable").innerHTML = "<tr><td colspan=3 style='text-align:center;padding:20px'>Cart Empty - <a href='customer_view_products.html'>Shop Now</a></td></tr>";
+    document.getElementById("total").innerText="Total: Rs.0";
+    return;
+  }
+  showTable(cart);
+}
+
+function showTable(cart){
+  let total=0;
+  let html="<tr><th>Product</th><th>Price</th><th>Action</th></tr>";
+  cart.forEach((p,i)=>{
+    total+=Number(p.price);
+    html+=`<tr><td><b>${p.name}</b><br><small>${p.details||p.detail||''}</small></td><td style="color:green;font-weight:bold">Rs.${p.price}</td><td><button onclick="removeItem(${i})" style="background:red;color:white">Remove</button></td></tr>`;
+  });
+  document.getElementById("cartTable").innerHTML=html;
+  document.getElementById("total").innerText="Total: Rs."+total;
+}
+
+function removeItem(i){
+  let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+  cart.splice(i,1);
+  localStorage.setItem("cart",JSON.stringify(cart));
+  showLocalCart();
+  // update badge from main.js navbar
+  const badge = document.getElementById("cartBadge");
+  if(badge) badge.innerText = cart.length;
+}
+
+async function placeOrder(){
+  let cart=JSON.parse(localStorage.getItem("cart")||"[]");
+  if(cart.length===0){ alert("Cart Empty"); return; }
+  try{
+    const res=await fetch("http://localhost:3000/order/place",{
+      method:"POST",
+      headers:{"Content-Type":"application/json","Authorization":`Bearer ${token}`},
+      body:JSON.stringify({products:cart})
+    });
+    const data=await res.json();
+    if(!res.ok){
+      alert("401 Error: " + data.message + " - Please login again");
+      localStorage.clear();
+      location.href="login.html";
+      return;
+    }
+    alert(data.message||"Order Placed!");
+  }catch(e){
+    console.log(e);
+    alert("Order Placed! (Local) - Backend not running");
+  }
+  localStorage.removeItem("cart");
+  location.href="customer_view_products.html";
+}
+
+loadCart();
+</script>
+</body>
+</html>

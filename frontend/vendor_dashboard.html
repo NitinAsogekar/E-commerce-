@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Vendor Dashboard</title>
+    <style>
+    body{margin:0;font-family:Arial;background:#f2f2f2}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;padding:15px}
+    .card{background:white;padding:20px;border-radius:8px;text-align:center;box-shadow:0 2px 5px #ccc}
+    </style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<div style="padding:15px">
+  <h2>Vendor Dashboard</h2>
+  <p>Welcome, <b id="vendorName"></b></p>
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h2 id="p">0</h2>
+    <p>Products</p>
+    <button onclick="location.href='view_product.html'" style="background:#007bff;color:white;padding:8px 15px;border:none;border-radius:4px;cursor:pointer">View Products</button>
+  </div>
+  <div class="card">
+    <h2 id="o">0</h2>
+    <p>Orders</p>
+    <button onclick="location.href='place_order.html'" style="background:orange;color:white;padding:8px 15px;border:none;border-radius:4px;cursor:pointer">View Orders</button>
+  </div>
+  <div class="card">
+    <h2>Rs.<span id="s">0</span></h2>
+    <p>Sales</p>
+    <button onclick="location.href='add_product.html'" style="background:green;color:white;padding:8px 15px;border:none;border-radius:4px;cursor:pointer">+ Add Product</button>
+  </div>
+</div>
+
+<script>
+const token=localStorage.getItem("token");
+document.getElementById("vendorName").innerText = localStorage.getItem("username")||"Vendor";
+
+fetch("http://localhost:3000/product/view",{headers:{Authorization:`Bearer ${token}`}})
+.then(r=>r.json()).then(d=>{
+  document.getElementById("p").innerText=d.length;
+  // calculate sales
+  let total = 0;
+  d.forEach(p=> total += Number(p.price));
+  document.getElementById("s").innerText = total;
+}).catch(()=>{});
+</script>
+
+</body>
+</html>

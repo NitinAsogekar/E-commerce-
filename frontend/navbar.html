@@ -1,0 +1,24 @@
+<style>
+.navbar{
+  background:#222; color:white; padding:12px 20px;
+  display:flex; justify-content:space-between; align-items:center;
+  font-family:Arial; position:sticky; top:0; z-index:1000;
+  box-shadow:0 2px 10px #0003;
+}
+.navbar .logo{font-weight:bold; font-size:20px; cursor:pointer;}
+.navbar .menu{display:flex; gap:10px; align-items:center;}
+.navbar .menu a, .navbar .menu button{
+  color:white; text-decoration:none; background:#444; border:none;
+  padding:6px 12px; border-radius:4px; cursor:pointer; font-weight:bold;
+}
+.navbar .menu .active, .navbar .menu a:hover{background:#666 !important;}
+.btn-cart{background:orange !important; position:relative;}
+.btn-cart span{background:red; border-radius:10px; padding:2px 6px; font-size:12px; margin-left:5px;}
+.btn-logout{background:#d32f2f !important;}
+.btn-add{background:green !important;}
+</style>
+
+<div class="navbar">
+  <div class="logo" id="navLogo">🛒 Acme Shop</div>
+  <div class="menu" id="navMenu"></div>
+</div>

@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Signup - Acme Shop</title>
+<style>
+/* Full page style - light grey background */
+body{font-family:Arial;background:#f2f2f2;margin:0}
+
+/* Flexbox to bring the signup box to center of screen */
+.center{ display:flex;justify-content:center;align-items:center;height:calc(100vh - 60px); }
+
+/* Main white signup card with shadow and rounded corners */
+.box{background:white;width:420px;border-radius:10px;box-shadow:0 5px 20px #aaa;overflow:hidden}
+
+/* Heading - Signup title bar */
+h2{background:#222;color:white;text-align:center;margin:0;padding:15px}
+
+/* Table takes full width of box */
+table{width:100%;border-collapse:collapse}
+
+/* Each cell padding */
+td{padding:12px;font-weight:bold}
+
+/* Style for input boxes and dropdown */
+input,select{width:100%;padding:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box}
+
+/* Green Signup button style */
+.btn-signup{width:100%;padding:12px;background:#28a745;color:white;border:none;border-radius:5px;font-size:16px;font-weight:bold;cursor:pointer}
+
+/* Dark green on hover */
+.btn-signup:hover{background:#1e7e34}
+
+/* Error/Success message style */
+#message{text-align:center;font-weight:bold}
+
+/* Login link center */
+.link{text-align:center}
+
+</style>
+</head>
+<body>
+
+<!-- Navbar placeholder - content comes from main.js -->
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<!-- Centered container -->
+<div class="center">
+<!-- Signup form box -->
+<div class="box">
+<h2>Signup</h2>
+<table>
+<!-- Username field -->
+<tr><td>Username</td><td><input type="text" placeholder="Username" id="uname"></td></tr>
+<!-- Password field -->
+<tr><td>Password</td><td><input type="password" placeholder="Enter Password" id="upass" ></td></tr>
+<!-- Role selection - Vendor or Customer -->
+<tr><td>Role</td><td>
+<select id="urole">
+<option value="Vendor">Vendor</option>
+<option value="Customer">Customer</option>
+</select>
+</td></tr>
+<!-- Signup button - calls signupAPI() function -->
+<tr><td colspan="2"><button class="btn-signup" onclick="signupAPI()">Signup</button></td></tr>
+<!-- Area to show message and link to login page -->
+<tr><td colspan="2"><p id="message"></p><div class="link"><a href="login.html">Already have account? Login</a></div></td></tr>
+</table>
+</div>
+</div>
+
+<script>
+// Main function to handle signup
+async function signupAPI() {
+    // Step 1: Collect data from form fields
+    const payload = {
+        username: document.getElementById("uname").value,
+        password: document.getElementById("upass").value,          
+        role: document.getElementById("urole").value,
+    }
+    // Step 2: Check if username and password are filled
+    if(!payload.username || !payload.password){ alert("Enter all fields"); return; }
+    try {
+        // Step 3: Send data to backend server using fetch API
+        const res = await fetch("http://localhost:3000/signup", {
+            method: "POST", // POST method for creating new user
+            headers: { "Content-Type": "application/json" }, // Sending JSON data
+            body: JSON.stringify(payload) // Convert object to JSON string
+        });
+        // Step 4: Get response from backend
+        const data = await res.json();
+        // Step 5: If success, show message and go to login page
+        if(res.ok){
+            alert(data.message);
+            window.location.href = "login.html";
+        } else {
+            // Step 6: If server returns error, throw error
+            throw new Error(data.message);
+        }
+    } catch (err) {
+        // Step 7: Show signup failed error on page
+        document.getElementById("message").style.color="red";
+        document.getElementById("message").innerText = 'Signup Failed: ' + err.message;
+    }
+}
+</script>
+</body>
+</html>

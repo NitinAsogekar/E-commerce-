@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Edit Product</title>
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0}
+.center{display:flex;justify-content:center;align-items:center;height:calc(100vh - 60px);}
+.box{background:white;width:450px;border-radius:10px;box-shadow:0 5px 20px #aaa;overflow:hidden}
+h2{background:#222;color:white;text-align:center;margin:0;padding:15px}
+table{width:100%;border-collapse:collapse}
+td{padding:12px;font-weight:bold}
+input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box}
+textarea{height:80px;resize:none}
+.btn-update{width:100%;padding:12px;background:green;color:white;border:none;border-radius:5px;font-size:16px;font-weight:bold;cursor:pointer}
+.btn-back{width:100%;padding:10px;background:#333;color:white;border:none;border-radius:5px;margin-top:5px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<div class="center">
+<div class="box">
+<h2>Edit Product</h2>
+<table>
+<tr><td>Product Name</td><td><input type="text" id="pname" placeholder="Product Name"></td></tr>
+<tr><td>Price</td><td><input type="text" id="pprice" placeholder="Product Price"></td></tr>
+<tr><td>Description</td><td><textarea id="pdetail" placeholder="Product Description"></textarea></td></tr>
+<tr><td colspan="2">
+<button class="btn-update" onclick="updateProduct()">Update Product</button>
+<button class="btn-back" onclick="location.href='view_product.html'">Back to Products</button>
+</td></tr>
+</table>
+</div>
+</div>
+
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const pid = urlParams.get("pid") || localStorage.getItem("edit_pid");
+const token = localStorage.getItem("token");
+
+if(!pid){ alert("No product selected"); location.href="view_product.html"; }
+
+async function loadProduct(){
+    try{
+        const res = await fetch(`http://localhost:3000/product/${pid}`,{
+            headers: { "Authorization": `Bearer ${token}` }
+        });
+        const product = await res.json();
+        document.getElementById("pname").value = product.name;
+        document.getElementById("pprice").value = product.price;
+        document.getElementById("pdetail").value = product.details || product.detail;
+    }catch(e){
+        alert("Failed to load: " + e.message);
+    }
+}
+loadProduct();
+
+async function updateProduct(){
+    const payload = {
+        name: document.getElementById("pname").value,
+        price: document.getElementById("pprice").value,
+        detail: document.getElementById("pdetail").value
+    };
+    const res = await fetch(`http://localhost:3000/product/edit/${pid}`,{
+        method: "PUT",
+        headers: {
+                   "Content-Type": "application/json",
+                   "Authorization": `Bearer ${token}`
+                },
+        body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    alert(data.message);
+    localStorage.removeItem("edit_pid");
+    window.location.href = "view_product.html";
+}
+</script>
+</body>
+</html>

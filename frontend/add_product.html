@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>Upload Product</title>
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0}
+.center{display:flex;justify-content:center;align-items:center;height:calc(100vh - 60px);}
+.box{background:white;width:450px;border-radius:10px;box-shadow:0 5px 20px #aaa;overflow:hidden}
+h2{background:#222;color:white;text-align:center;margin:0;padding:15px}
+table{width:100%;border-collapse:collapse}
+td{padding:12px;font-weight:bold}
+input,textarea{width:100%;padding:10px;border:1px solid #ccc;border-radius:5px;box-sizing:border-box}
+textarea{height:80px;resize:none}
+button.upload{width:100%;padding:12px;background:green;color:white;border:none;border-radius:5px;font-size:16px;font-weight:bold;cursor:pointer}
+button.upload:hover{background:darkgreen}
+</style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<div class="center">
+<div class="box">
+<h2>Upload Product</h2>
+<table>
+<tr><td>Product Name</td><td><input type="text" placeholder="Product Name" id="pname"></td></tr>
+<tr><td>Price</td><td><input type="text" placeholder="Product Price" id="pprice"></td></tr>
+<tr><td>Description</td><td><textarea placeholder="Product Description" id="pdetail"></textarea></td></tr>
+<tr><td colspan="2"><button class="upload" onclick="uploadProduct()">Upload Product</button><p id="msg" style="text-align:center;color:green"></p><center><a href="view_product.html">View Products</a></center></td></tr>
+</table>
+</div>
+</div>
+
+<script>
+const pnameRef = document.getElementById("pname");
+const ppriceRef = document.getElementById("pprice");
+const pdetailRef = document.getElementById("pdetail");
+
+async function uploadProduct(){
+    const token = localStorage.getItem("token");
+    if(!token){
+        alert("Token not found, please login again");
+        window.location.href = "login.html";
+        return;
+    }
+    const payload={
+        name: pnameRef.value,
+        price: ppriceRef.value,
+        detail: pdetailRef.value
+    }
+    const rawResponse = await fetch("http://localhost:3000/product/add",{
+        method:"POST",
+        headers: {
+          "content-type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body:JSON.stringify(payload)
+    })
+    const apiResponse = await rawResponse.json()
+    if(apiResponse.error){
+        alert(apiResponse.message);
+        if(apiResponse.message === "Invalid token"){
+            localStorage.clear();
+            window.location.href = "login.html";
+        }
+    } else {
+        alert(apiResponse.message);
+        pnameRef.value=""; ppriceRef.value=""; pdetailRef.value="";
+        window.location.href="view_product.html";
+    }
+}
+</script>
+
+</body>
+</html>

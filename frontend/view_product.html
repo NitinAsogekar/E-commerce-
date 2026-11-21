@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<title>My Products</title>
+<style>
+body{font-family:Arial;background:#f2f2f2;margin:0}
+.box{background:white;margin:15px;border-radius:8px;box-shadow:0 2px 5px #ccc;overflow:hidden}
+table{width:100%;border-collapse:collapse}
+th{background:#222;color:white;padding:12px;text-align:left}
+td{padding:12px;border-bottom:1px solid #eee}
+.btn-edit{background:#007bff;color:white;padding:6px 10px;border:none;border-radius:4px;cursor:pointer}
+.btn-del{background:red;color:white;padding:6px 10px;border:none;border-radius:4px;cursor:pointer}
+</style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<div style="padding:15px;display:flex;justify-content:space-between;align-items:center">
+  <h2>My Products</h2>
+  <input id="search" placeholder="Search..." onkeyup="filter()" style="padding:8px;border-radius:4px;border:1px solid #ccc">
+</div>
+
+<div class="box">
+<table id="productTable">
+<tr><th>Name</th><th>Price</th><th>Detail</th><th>Actions</th></tr>
+<tr><td colspan="4" style="text-align:center">Loading...</td></tr>
+</table>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+let allProducts = [];
+
+async function loadProducts(){
+  try{
+    const res = await fetch("http://localhost:3000/product/view",{
+      headers:{ "Authorization": `Bearer ${token}` }
+    });
+    allProducts = await res.json();
+    if(allProducts.length==0){
+      document.getElementById("productTable").innerHTML="<tr><td colspan=4 style='text-align:center;padding:20px'>No Products Found</td></tr>";
+    }else{
+      show(allProducts);
+    }
+  }catch(e){
+    document.getElementById("productTable").innerHTML=`<tr><td colspan=4 style='text-align:center;color:red'>Failed: ${e.message}</td></tr>`;
+  }
+}
+
+function show(data){
+  let html = "<tr><th>Name</th><th>Price</th><th>Detail</th><th>Actions</th></tr>";
+  data.forEach(p=>{
+    html+=`<tr>
+      <td><b>${p.name}</b></td>
+      <td style="color:green;font-weight:bold">Rs.${p.price}</td>
+      <td>${p.details||p.detail||''}</td>
+      <td>
+        <button class="btn-edit" onclick="editProduct(${p.pid})">Edit</button>
+        <button class="btn-del" onclick="deleteProduct(${p.pid})">Delete</button>
+      </td>
+    </tr>`;
+  });
+  document.getElementById("productTable").innerHTML=html;
+}
+
+function editProduct(pid){
+  localStorage.setItem("edit_pid", pid);
+  location.href=`edit_product.html?pid=${pid}`;
+}
+
+async function deleteProduct(pid){
+  if(!confirm("Delete this product?")) return;
+  const res = await fetch(`http://localhost:3000/product/delete/${pid}`,{
+    method:"DELETE",
+    headers:{ "Authorization": `Bearer ${token}` }
+  });
+  const data = await res.json();
+  alert(data.message);
+  loadProducts();
+}
+
+function filter(){
+  const q = document.getElementById("search").value.toLowerCase();
+  show(allProducts.filter(p=>p.name.toLowerCase().includes(q)));
+}
+
+loadProducts();
+</script>
+</body>
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Shop - Products</title>
+<style>
+body{font-family:Arial; background:#f2f2f2; margin:0;}
+.grid{display:grid; grid-template-columns: repeat(auto-fill, minmax(250px,1fr)); gap:15px; padding:15px;}
+.card{background:white; padding:15px; border-radius:8px; box-shadow:0 2px 5px #ccc; text-align:center;}
+button{padding:8px 15px; border:none; border-radius:4px; cursor:pointer;}
+.btn-add-cart{background:#007bff; color:white; width:100%; margin-top:10px;}
+</style>
+</head>
+<body>
+
+<div id="navbar"></div>
+<script src="main.js"></script>
+
+<input id="search" placeholder="Search products..." onkeyup="filter()" style="width:95%; padding:12px; margin:10px; border-radius:5px; border:1px solid #ccc">
+
+<div id="products" class="grid">Loading products...</div>
+
+<script>
+let allProducts = [];
+
+async function load(){
+  try{
+    const res = await fetch("http://localhost:3000/product/view");
+    allProducts = await res.json();
+    if(allProducts.length==0) document.getElementById("products").innerHTML="No products in DB";
+    else show(allProducts);
+  }catch(err){
+    document.getElementById("products").innerHTML = `Failed: ${err.message}`;
+  }
+}
+
+function show(data){
+  document.getElementById("products").innerHTML = data.map(p=>`
+    <div class="card">
+      <h3>${p.name}</h3>
+      <p>${p.details || ''}</p>
+      <h4 style="color:green">Rs. ${p.price}</h4>
+      <button class="btn-add-cart" onclick="addToCart(${p.pid})">Add to Cart</button>
+    </div>
+  `).join('');
+}
+
+function addToCart(pid){
+  let cart = JSON.parse(localStorage.getItem("cart")||"[]");
+  let product = allProducts.find(x=>x.pid==pid);
+  cart.push(product);
+  localStorage.setItem("cart", JSON.stringify(cart));
+  // update badge from navbar
+  const badge = document.getElementById("cartBadge");
+  if(badge) badge.innerText = cart.length;
+  alert(product.name+" Added to Cart");
+}
+
+function filter(){
+  const q = document.getElementById("search").value.toLowerCase();
+  show(allProducts.filter(p=>p.name.toLowerCase().includes(q)));
+}
+
+load();
+</script>
+</body>
+</html>
